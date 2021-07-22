@@ -10,8 +10,7 @@ constexpr int StackSegmentSize=10000;
 class VirtualMachine{
 public:
     VirtualMachine(){
-        memset(CodeSegment,0,CodeSegmentSize);
-        memset(StackSegment,0,StackSegmentSize);
+        init();
     }
     void run(){
         while(codeTop()&&CodePointer<CodeSegmentSize){
@@ -41,6 +40,15 @@ public:
         if(MatchBracket.size())
             machineError("无法匹配的[");
     }
+    void init(){
+        memset(CodeSegment,0,CodeSegmentSize);
+        memset(StackSegment,0,StackSegmentSize);
+        CodePointer=0;
+        StackPointer=0;
+        std::stack<int> empty;
+        MatchBracket.swap(empty);
+        MapBracket.clear();
+    }
 private:
     char CodeSegment[CodeSegmentSize];
     char StackSegment[StackSegmentSize];
@@ -48,6 +56,9 @@ private:
     int CodePointer=0;
     int StackPointer=0;
 
+    std::stack<int> MatchBracket;
+    std::map<int,int> MapBracket;
+    
     char &codeTop(){
         return CodeSegment[CodePointer];
     }
@@ -58,8 +69,7 @@ private:
         puts(msg.c_str());
         exit(1);
     };
-    std::stack<int> MatchBracket;
-    std::map<int,int> MapBracket;
+
     void forward(){
         if(StackPointer==StackSegmentSize)
             machineError("Stack Overflow");
@@ -117,7 +127,15 @@ int main(int argc,char *argv[]) {
             code+=tmp;
         VM.load(code);
         VM.run();
+        std::cout<<std::endl;
+    }else{
+        std::string code;
+        while(getline(std::cin,code)){
+            VM.init();
+            VM.load(code);
+            VM.run();
+            std::cout<<std::endl;
+        }
     }
-    std::cout<<std::endl;
     return 0;
 }
